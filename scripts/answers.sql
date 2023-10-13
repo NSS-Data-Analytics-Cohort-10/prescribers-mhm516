@@ -106,14 +106,9 @@ SELECT fips_county.county, population.population
 FROM population
 INNER JOIN fips_county
 USING (fipscounty)
-INNER JOIN cbsa
-USING (fipscounty)
-WHERE cbsa NOT IN (cbsa.fipscounty)
+WHERE population.fipscounty NOT IN (SELECT cbsa.fipscounty
+				  FROM cbsa)
 ORDER BY population DESC;
-
-select population
-from population;
-
 -- 6. 
 --     a. Find all rows in the prescription table where total_claims is at least 3000. Report the drug_name and the total_claim_count.
 SELECT drug_name, total_claim_count
@@ -140,8 +135,11 @@ select specialty_description, drug_name
 from prescriber
 inner join prescription
 using (npi)
+inner join drug
+using (drug_name)
 where specialty_description = 'Pain Management'
-and where nppes_provider_city = 'NASHVILLE';
+and nppes_provider_city = 'NASHVILLE'
+and drug.opioid_drug_flag = 'Y';
 --     b. Next, report the number of claims per drug per prescriber. Be sure to include all combinations, whether or not the prescriber had any claims. You should report the npi, the drug name, and the number of claims (total_claim_count).
-    
+SELECT npi, drug_name,     
 --     c. Finally, if you have not done so already, fill in any missing values for total_claim_count with 0. Hint - Google the COALESCE function.
