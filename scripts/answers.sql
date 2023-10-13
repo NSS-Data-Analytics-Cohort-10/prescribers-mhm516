@@ -102,14 +102,18 @@ USING (fipscounty)
 GROUP BY cbsaname;
 
 --     c. What is the largest (in terms of population) county which is not included in a CBSA? Report the county name and population.
-SELECT fips_county.county, population.population, cbsa.cbsa
+SELECT fips_county.county, population.population
 FROM population
-INNER JOIN cbsa
-USING (fipscounty)
 INNER JOIN fips_county
 USING (fipscounty)
-WHERE cbsa.fipscounty IN (population.fipscounty)
+INNER JOIN cbsa
+USING (fipscounty)
+WHERE cbsa NOT IN (cbsa.fipscounty)
 ORDER BY population DESC;
+
+select population
+from population;
+
 -- 6. 
 --     a. Find all rows in the prescription table where total_claims is at least 3000. Report the drug_name and the total_claim_count.
 SELECT drug_name, total_claim_count
@@ -132,7 +136,12 @@ WHERE total_claim_count>= 3000;
 -- 7. The goal of this exercise is to generate a full list of all pain management specialists in Nashville and the number of claims they had for each opioid. **Hint:** The results from all 3 parts will have 637 rows.
 
 --     a. First, create a list of all npi/drug_name combinations for pain management specialists (specialty_description = 'Pain Management) in the city of Nashville (nppes_provider_city = 'NASHVILLE'), where the drug is an opioid (opiod_drug_flag = 'Y'). **Warning:** Double-check your query before running it. You will only need to use the prescriber and drug tables since you don't need the claims numbers yet.
-
+select specialty_description, drug_name
+from prescriber
+inner join prescription
+using (npi)
+where specialty_description = 'Pain Management'
+and where nppes_provider_city = 'NASHVILLE';
 --     b. Next, report the number of claims per drug per prescriber. Be sure to include all combinations, whether or not the prescriber had any claims. You should report the npi, the drug name, and the number of claims (total_claim_count).
     
 --     c. Finally, if you have not done so already, fill in any missing values for total_claim_count with 0. Hint - Google the COALESCE function.
