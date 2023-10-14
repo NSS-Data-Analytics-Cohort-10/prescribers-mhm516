@@ -50,7 +50,7 @@ SELECT specialty_description,  COUNT(drug_name)
 		   from prescription
 			inner join drug
 			using (drug_name)
-		   where opioid_drug_flag = 'Y')/sum(total_claim_count)
+		   where opioid_drug_flag = 'Y')/sum(total_claim_count)*.01
 		   from prescription
 		   left join prescriber
 		   Using (npi)
