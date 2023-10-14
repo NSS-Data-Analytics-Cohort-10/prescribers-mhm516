@@ -42,11 +42,21 @@ SELECT specialty_description,  COUNT(drug_name)
 	INNER JOIN drug
 	USING (drug_name)
 	GROUP BY specialty_description
-	ORDER BY count(drug_name)
-	LIMIT 10;
+	ORDER BY count(drug_name);
 	--no
 --     d. **Difficult Bonus:** *Do not attempt until you have solved all other problems!* For each specialty, report the percentage of total claims by that specialty which are for opioids. Which specialties have a high percentage of opioids?
-
+	
+	Select specialty_description,(select sum(total_claim_count)
+		   from prescription
+			inner join drug
+			using (drug_name)
+		   where opioid_drug_flag = 'Y')/sum(total_claim_count)
+		   from prescription
+		   left join prescriber
+		   Using (npi)
+		   group by specialty_description;
+		   
+	
 -- 3. 
 --     a. Which drug (generic_name) had the highest total drug cost?
 SELECT generic_name, SUM(total_drug_cost)
