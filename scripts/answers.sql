@@ -1,30 +1,31 @@
 -- 1. 
 --     a. Which prescriber had the highest total number of claims (totaled over all drugs)? Report the npi and the total number of claims.
-    SELECT npi, total_claim_count
+    SELECT npi, SUM(total_claim_count)
 	FROM prescriber
 	INNER JOIN prescription
 	USING (npi)
-	ORDER BY total_claim_count DESC
+	group by npi
+	ORDER BY sum(total_claim_count) DESC
 	LIMIT 1;	
 	
 --     b. Repeat the above, but this time report the nppes_provider_first_name, nppes_provider_last_org_name,  specialty_description, and the total number of claims.
- SELECT nppes_provider_first_name, nppes_provider_last_org_name,  specialty_description,total_claim_count
+ SELECT nppes_provider_first_name, nppes_provider_last_org_name,  specialty_description, sum(total_claim_count)
 	FROM prescriber
 	INNER JOIN prescription
 	USING (npi)
-	ORDER BY total_claim_count DESC
-	LIMIT 1;
+	group by nppes_provider_first_name, nppes_provider_last_org_name,  specialty_description
+	ORDER BY sum(total_claim_count) DESC;
 -- 2. 
 --     a. Which specialty had the most total number of claims (totaled over all drugs)?
-SELECT specialty_description,  COUNT(npi)
+SELECT specialty_description,  sum(total_claim_count)
 	FROM prescriber
 	INNER JOIN prescription
 	USING (npi)
 	GROUP BY specialty_description
-	ORDER BY count(npi) DESC
+	ORDER BY sum(total_claim_count) DESC
 	LIMIT 1;
 --     b. Which specialty had the most total number of claims for opioids?
-SELECT specialty_description,  COUNT(npi)
+SELECT specialty_description,  sum(total_claim_count)
 	FROM prescriber
 	INNER JOIN prescription
 	USING (npi)
@@ -32,17 +33,15 @@ SELECT specialty_description,  COUNT(npi)
 	USING (drug_name)
 	WHERE opioid_drug_flag = 'Y'
 	GROUP BY specialty_description
-	ORDER BY count(npi) DESC
+	ORDER BY sum(total_claim_count) DESC
 	LIMIT 1;
 --     c. **Challenge Question:** Are there any specialties that appear in the prescriber table that have no associated prescriptions in the prescription table?
-SELECT specialty_description,  COUNT(drug_name)
+SELECT specialty_description,  count(drug_name)
 	FROM prescriber
-	INNER JOIN prescription
+	left JOIN prescription
 	USING (npi)
-	INNER JOIN drug
-	USING (drug_name)
 	GROUP BY specialty_description
-	ORDER BY count(drug_name);
+	having count(drug_name)= '0';
 	--no
 --     d. **Difficult Bonus:** *Do not attempt until you have solved all other problems!* For each specialty, report the percentage of total claims by that specialty which are for opioids. Which specialties have a high percentage of opioids?
 	
@@ -109,12 +108,13 @@ SELECT cbsaname, SUM(population)
 FROM cbsa
 INNER JOIN population
 USING (fipscounty)
-GROUP BY cbsaname;
+GROUP BY cbsaname
+order by SUM(population) desc;
 
 --     c. What is the largest (in terms of population) county which is not included in a CBSA? Report the county name and population.
 SELECT fips_county.county, population.population
 FROM population
-INNER JOIN fips_county
+Left JOIN fips_county
 USING (fipscounty)
 WHERE population.fipscounty NOT IN (SELECT cbsa.fipscounty
 				  FROM cbsa)
@@ -127,7 +127,7 @@ WHERE total_claim_count>= 3000;
 --     b. For each instance that you found in part a, add a column that indicates whether the drug is an opioid.
 SELECT drug_name, total_claim_count, opioid_drug_flag
 FROM prescription
-inner join drug
+left join drug
 using(drug_name)
 WHERE total_claim_count>= 3000;
 --     c. Add another column to you answer from the previous part which gives the prescriber first and last name associated with each row.
